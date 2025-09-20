@@ -1,0 +1,62 @@
+# RapidShip Configuration for Trading Signal Alerts
+project:
+  name: trading-signal-alerts
+  version: 0.1.0
+  description: Real-time trading signal notifications via mobile push alerts
+  
+# Stack configuration  
+stack:
+  type: fastapi
+  version: latest
+  
+# Features to include
+features:
+  auth:
+    enabled: false  # Simple alerts don't need user auth initially
+  payments:
+    enabled: false
+  analytics:
+    enabled: true
+    provider: simple_logging
+  ai:
+    enabled: false  # Using pandas_ta for technical analysis
+  notifications:
+    enabled: true
+    provider: firebase_fcm
+    
+# Deployment targets
+deploy:
+  primary: fly
+  environments:
+    production:
+      url: https://trading-signals.fly.dev
+      branch: main
+    staging:
+      url: https://trading-signals-staging.fly.dev
+      branch: develop
+      
+# Monitoring
+monitoring:
+  error_tracking: simple_logging
+  logging: structured_json
+  metrics: basic_health_checks
+  uptime: manual
+  
+# Security
+security:
+  cors:
+    origins: ["*"]  # Mobile app can call from anywhere
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 120  # Allow frequent signal checks
+  secrets:
+    manager: dotenv
+
+# Trading-specific configuration
+trading:
+  oanda:
+    environment: live  # or practice
+    poll_interval: 10  # seconds
+  signals:
+    instruments: ["EUR_USD", "GBP_USD", "USD_JPY"]
+    strategies: ["main_trend_following"]
