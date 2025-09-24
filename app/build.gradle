@@ -16,9 +16,9 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         
-        // Production build config
-        buildConfigField "String", "API_BASE_URL", "\"https://api.forexalertpro.com\""
-        buildConfigField "boolean", "IS_PRODUCTION", "true"
+        // Default build config (will be overridden by buildTypes)
+        buildConfigField "String", "API_BASE_URL", "\"http://192.168.1.100:8000\""
+        buildConfigField "boolean", "IS_PRODUCTION", "false"
     }
 
     buildTypes {

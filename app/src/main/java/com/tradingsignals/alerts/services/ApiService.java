@@ -35,8 +35,20 @@ public class ApiService {
     private static final int DEFAULT_PORT = 8000;
     private static final String DEV_BASE_URL = "http://" + LOCALHOST_IP + ":" + DEFAULT_PORT;
     
-    // Use BuildConfig to determine environment (set in build.gradle)
-    private static final String BASE_URL = BuildConfig.API_BASE_URL;
+    // Use BuildConfig with fallback to prevent crashes
+    private static final String BASE_URL = getBaseUrl();
+    
+    private static String getBaseUrl() {
+        try {
+            // Use BuildConfig value if available
+            return BuildConfig.API_BASE_URL != null && !BuildConfig.API_BASE_URL.isEmpty() 
+                ? BuildConfig.API_BASE_URL 
+                : DEV_BASE_URL;
+        } catch (Exception e) {
+            // Fallback if BuildConfig is not available
+            return DEV_BASE_URL;
+        }
+    }
     
     // Network timeouts
     private static final int CONNECT_TIMEOUT_SECONDS = 10;
