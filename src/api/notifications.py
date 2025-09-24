@@ -51,3 +51,33 @@ async def notification_status():
     except Exception as e:
         logger.error("notification_status_failed", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+class DeviceRegistration(BaseModel):
+    device_token: str
+    device_type: str = "android"
+
+@router.post("/register")
+async def register_device_for_notifications(registration: DeviceRegistration):
+    """Register device for push notifications - endpoint expected by mobile app"""
+    try:
+        from ..main import get_signal_engine
+        
+        signal_engine = get_signal_engine()
+        if not signal_engine:
+            raise HTTPException(status_code=503, detail="Signal engine not available")
+        
+        # Register the device token
+        signal_engine.register_device(registration.device_token)
+        
+        logger.info("device_registered_for_notifications", 
+                   device_type=registration.device_type)
+        
+        return {
+            "success": True,
+            "message": "Device registered for notifications",
+            "device_token": registration.device_token[:20] + "..." # Partial token for security
+        }
+        
+    except Exception as e:
+        logger.error("device_registration_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))

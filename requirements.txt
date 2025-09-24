@@ -10,9 +10,9 @@ psutil==5.9.8
 
 # Trading dependencies (from your existing bot)
 oandapyV20==0.6.3
-pandas==2.1.4
-pandas-ta==0.3.14b0
-numpy==1.26.2
+pandas>=2.3.2
+# pandas-ta removed due to Windows posix module compatibility issues
+numpy>=2.2.6
 yfinance==0.2.28
 
 # Firebase Cloud Messaging

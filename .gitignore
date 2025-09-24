@@ -30,10 +30,30 @@ Thumbs.db
 # Logs
 *.log
 
-# Firebase
+# Firebase (sensitive files)
 firebase-service-account-key.json
+google-services.json
+GoogleService-Info.plist
+firebase-debug.log
+firebase-debug.*.log
 
-# Mobile app
+# Mobile app build files
 mobile/app/build/
 mobile/app/release/
 mobile/.gradle/
+mobile/build/
+mobile/gradle/wrapper/gradle-wrapper.jar
+*.apk
+*.aab
+*.keystore
+*.jks
+local.properties
+
+# Android Studio
+.externalNativeBuild
+.cxx
+captures/
+
+# Sensitive API keys and config
+config/firebase_config.json
+config/oanda_config.json

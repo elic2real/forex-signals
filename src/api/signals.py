@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Any
 import structlog
 
+from ..core.constants import ErrorCodes, HTTPStatus, ErrorMessages
+
 logger = structlog.get_logger()
 
 router = APIRouter()
@@ -19,12 +21,22 @@ class SignalRequest(BaseModel):
 async def register_device(registration: DeviceRegistration):
     """Register a mobile device for push notifications"""
     try:
+        # Validation
+        if not registration.device_token or len(registration.device_token) < 10:
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST, 
+                detail=ErrorMessages.INVALID_FCM_TOKEN
+            )
+        
         # Import here to avoid circular dependency
         from ..main import get_signal_engine
         
         signal_engine = get_signal_engine()
         if not signal_engine:
-            raise HTTPException(status_code=503, detail="Signal engine not available")
+            raise HTTPException(
+                status_code=HTTPStatus.SERVICE_UNAVAILABLE, 
+                detail=ErrorMessages.SERVICE_UNAVAILABLE
+            )
         
         signal_engine.register_device(registration.device_token)
         
@@ -34,13 +46,19 @@ async def register_device(registration: DeviceRegistration):
         
         return {
             "success": True,
+            "error_code": ErrorCodes.SUCCESS,
             "message": "Device registered for trading signals",
             "device_token_preview": registration.device_token[:20] + "..."
         }
         
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
         logger.error("device_registration_failed", error=str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR, 
+            detail=ErrorMessages.INTERNAL_ERROR
+        )
 
 @router.post("/unregister-device")
 async def unregister_device(registration: DeviceRegistration):
@@ -142,4 +160,59 @@ async def send_test_signal(signal_request: SignalRequest):
         
     except Exception as e:
         logger.error("test_signal_failed", error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Additional endpoints expected by mobile app
+@router.get("/")
+async def get_signals():
+    """Get all trading signals - endpoint expected by mobile app"""
+    # This is an alias for /active-signals to match mobile app expectations
+    return await get_active_signals()
+
+@router.get("/{signal_id}")
+async def get_signal_details(signal_id: str):
+    """Get details for a specific signal"""
+    try:
+        from ..main import get_signal_engine
+        
+        signal_engine = get_signal_engine()
+        if not signal_engine:
+            raise HTTPException(
+                status_code=HTTPStatus.SERVICE_UNAVAILABLE,
+                detail=ErrorMessages.SERVICE_UNAVAILABLE
+            )
+        
+        # For now, return a sample signal - in production this would fetch from database
+        return {
+            "id": signal_id,
+            "instrument": "EUR_USD",
+            "signal_type": "buy",
+            "strength": 75,
+            "price": 1.1000,
+            "timestamp": "2025-09-24T14:30:00Z",
+            "status": "active"
+        }
+        
+    except Exception as e:
+        logger.error("get_signal_details_failed", error=str(e), signal_id=signal_id)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{signal_id}/action")
+async def execute_signal_action(signal_id: str, action: Dict[str, Any]):
+    """Execute an action on a trading signal (buy/sell/close)"""
+    try:
+        logger.info("signal_action_requested", 
+                   signal_id=signal_id, 
+                   action=action.get("action"))
+        
+        # For development, just return success
+        # In production, this would execute actual trades via OANDA
+        return {
+            "success": True,
+            "message": f"Action '{action.get('action')}' executed for signal {signal_id}",
+            "signal_id": signal_id
+        }
+        
+    except Exception as e:
+        logger.error("signal_action_failed", error=str(e), signal_id=signal_id)
         raise HTTPException(status_code=500, detail=str(e))

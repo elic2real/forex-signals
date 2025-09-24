@@ -5,7 +5,7 @@ import os
 class TradingConfig:
     def __init__(self):
         self.instruments = ["EUR_USD", "GBP_USD", "USD_JPY"]
-        self.poll_interval = 10  # seconds
+        self.poll_interval = 60  # seconds - increased for development
         self.strategies = {
             "main_trend_following": {
                 "sl_pips": 15,
@@ -24,8 +24,9 @@ class TradingConfig:
 
 class Settings(BaseSettings):
     APP_NAME: str = "Trading Signal Alerts"
-    VERSION: str = "0.1.0"
+    VERSION: str = "2.0.0"  # Production version
     DEBUG: bool = False
+    ENVIRONMENT: str = "production"  # production, development, or testing
     
     # OANDA Configuration
     OANDA_API_KEY: str = ""

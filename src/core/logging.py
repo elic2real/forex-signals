@@ -6,11 +6,18 @@ from .config import settings
 def setup_logging():
     """Configure structured logging for the application"""
     
+    # Production logging configuration
+    log_level = getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO)
+    
+    # In production, use WARNING level to reduce noise
+    if settings.ENVIRONMENT == "production":
+        log_level = logging.WARNING
+    
     # Configure Python logging
     logging.basicConfig(
         format="%(message)s",
         stream=sys.stdout,
-        level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
+        level=log_level,
     )
     
     # Configure structlog
@@ -32,6 +39,6 @@ def setup_logging():
         cache_logger_on_first_use=True,
     )
 
-def get_logger(name: str = None):
+def get_logger(name: str = "default"):
     """Get a structured logger instance"""
     return structlog.get_logger(name)

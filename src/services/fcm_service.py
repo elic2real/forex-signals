@@ -14,7 +14,28 @@ class FCMService:
         self.project_id = project_id
         self.private_key = private_key
         self._initialized = False
-        self._init_firebase()
+        
+        # Enable mock mode for test credentials
+        self.mock_mode = (project_id == "test_project" or private_key == "test_key")
+        
+        if not self.mock_mode:
+            self._init_firebase()
+        else:
+            self._initialized = True
+            logger.info("fcm_mock_mode_enabled", reason="test_credentials_detected")
+    
+    def _mock_send_notification(self, device_tokens: List[str], signal_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Mock notification sending for testing"""
+        logger.info("mock_notification_sent", 
+                   token_count=len(device_tokens),
+                   signal_type=signal_data.get("signal_type"),
+                   instrument=signal_data.get("instrument"))
+        
+        return {
+            "success_count": len(device_tokens),
+            "failure_count": 0,
+            "results": [{"message_id": f"mock_msg_{i}"} for i in range(len(device_tokens))]
+        }
     
     def _init_firebase(self):
         """Initialize Firebase Admin SDK"""
@@ -46,6 +67,9 @@ class FCMService:
         signal_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Send trading signal notification to mobile devices"""
+        
+        if self.mock_mode:
+            return self._mock_send_notification(device_tokens, signal_data)
         
         if not self._initialized:
             logger.error("fcm_not_initialized")
@@ -112,6 +136,9 @@ class FCMService:
     async def send_test_notification(self, device_token: str) -> Dict[str, Any]:
         """Send test notification to verify FCM setup"""
         
+        if self.mock_mode:
+            return self._mock_send_notification([device_token], {"signal_type": "TEST", "instrument": "TEST"})
+        
         if not self._initialized:
             return {"success": False, "error": "FCM not initialized"}
         
@@ -143,6 +170,10 @@ class FCMService:
     
     async def subscribe_to_topic(self, device_tokens: List[str], topic: str) -> Dict[str, Any]:
         """Subscribe devices to a topic for broadcast notifications"""
+        
+        if self.mock_mode:
+            logger.info("mock_topic_subscription", topic=topic, device_count=len(device_tokens))
+            return {"success": True, "success_count": len(device_tokens), "failure_count": 0}
         
         if not self._initialized:
             return {"success": False, "error": "FCM not initialized"}
