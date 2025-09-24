@@ -295,3 +295,5 @@ GET /health                   # Backend health check
 ## License
 
 This project is part of the Trading Signal Alerts system. See the main project README for licensing information.
+#   f o r e x - s i g n a l s  
+ 
