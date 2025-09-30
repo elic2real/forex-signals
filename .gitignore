@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Firebase (sensitive files)
+firebase-service-account-key.json
+google-services.json
+GoogleService-Info.plist
+firebase-debug.log
+firebase-debug.*.log
+
+# Mobile app build files
+mobile/app/build/
+mobile/app/release/
+mobile/.gradle/
+mobile/build/
+mobile/gradle/wrapper/gradle-wrapper.jar
+*.apk
+*.aab
+*.keystore
+*.jks
+local.properties
+
+# Android Studio
+.externalNativeBuild
+.cxx
+captures/
+
+# Sensitive API keys and config
+config/firebase_config.json
+config/oanda_config.json
