@@ -1,0 +1,38 @@
+strategies:
+  MAIN:
+    instrument: "EUR_USD"
+    sl_pips: 15
+    tp_pips: 30
+    fees_usd: 0.0
+    spread_usd: 0.0
+    slip_bps: 0.0
+
+account_profiles:
+  large:
+    risk_frac_main: 0.01
+  small:
+    risk_frac_main: 0.015
+
+filters_common:
+  max_spread_pips: 2.0
+  weekend_block: true
+  
+  chop_filters:
+    adx_min: 20
+    bb_width_min: null
+    atr_compression_lookback: 30
+  
+  momentum_confirm:
+    macd_hist_increasing: true
+    slope_bars: 3
+
+signal_conditions:
+  uptrend:
+    adx_min: 25
+    rsi_min: 55
+    ema_condition: "ema20 > ema50"
+  
+  downtrend:
+    adx_min: 25
+    rsi_max: 45
+    ema_condition: "ema20 < ema50"

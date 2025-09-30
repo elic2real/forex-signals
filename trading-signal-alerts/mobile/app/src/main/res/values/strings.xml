@@ -1,0 +1,139 @@
+<resources>
+    <!-- App Information -->
+    <string name="app_name">ForexAlert Pro</string>
+    <string name="app_description">Professional forex trading signals with real-time OANDA market data and instant push notifications</string>
+    
+    <!-- Activity Titles -->
+    <string name="main_activity_title">ForexAlert Pro</string>
+    <string name="signal_details_title">Signal Details</string>
+    <string name="settings_title">Settings</string>
+    
+    <!-- Navigation -->
+    <string name="action_refresh">Refresh</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_test_notification">Test Notification</string>
+    
+    <!-- Signal Information -->
+    <string name="signal_type_buy">BUY</string>
+    <string name="signal_type_sell">SELL</string>
+    <string name="confidence_label">Confidence: %s</string>
+    <string name="entry_price_label">Entry Price</string>
+    <string name="stop_loss_label">Stop Loss</string>
+    <string name="take_profit_label">Take Profit</string>
+    <string name="current_price_label">Current Price</string>
+    <string name="spread_label">Spread: %s pips</string>
+    
+    <!-- Signal Status -->
+    <string name="status_active">ACTIVE</string>
+    <string name="status_closed">CLOSED</string>
+    <string name="status_expired">EXPIRED</string>
+    
+    <!-- Confidence Levels -->
+    <string name="confidence_high">HIGH</string>
+    <string name="confidence_medium">MEDIUM</string>
+    <string name="confidence_low">LOW</string>
+    
+    <!-- Time Formats -->
+    <string name="time_now">Just now</string>
+    
+    <!-- Plurals for time -->
+    <plurals name="time_minutes_ago">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    
+    <plurals name="time_hours_ago">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    
+    <plurals name="time_days_ago">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    
+    <!-- Messages -->
+    <string name="loading_signals">Loading signals…</string>
+    <string name="no_signals_available">No trading signals available\nPull to refresh</string>
+    <string name="refresh_to_update">Pull to refresh</string>
+    <string name="signal_updated">Signal updated</string>
+    <string name="device_registered">Device registered for notifications</string>
+    <string name="registration_failed">Failed to register device</string>
+    
+    <!-- Error Messages -->
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_loading_signals">Failed to load signals</string>
+    <string name="error_loading_signal_details">Failed to load signal details</string>
+    <string name="error_marking_action">Failed to mark signal action</string>
+    
+    <!-- Notifications -->
+    <string name="notification_channel_signals">Trading Signals</string>
+    <string name="notification_channel_signals_description">Receive notifications for new trading signals</string>
+    <string name="notification_channel_updates">Signal Updates</string>
+    <string name="notification_channel_updates_description">Receive notifications for signal status updates</string>
+    <string name="notification_channel_alerts">Market Alerts</string>
+    <string name="notification_channel_alerts_description">Receive market news and volatility alerts</string>
+    <string name="notification_channel_general">General</string>
+    <string name="notification_channel_general_description">General app notifications</string>
+    
+    <!-- Notification Actions -->
+    <string name="action_entry_taken">Entry Taken</string>
+    <string name="action_exit_taken">Exit Taken</string>
+    <string name="action_ignore">Ignore</string>
+    <string name="action_view_details">View Details</string>
+    
+    <!-- Settings -->
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_enable_notifications">Enable Notifications</string>
+    <string name="settings_enable_notifications_summary">Receive push notifications for trading signals</string>
+    <string name="settings_notification_sound">Notification Sound</string>
+    <string name="settings_notification_vibration">Vibration</string>
+    <string name="settings_backend_url">Backend URL</string>
+    <string name="settings_backend_url_summary">Server address for trading signals</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version %s</string>
+    
+    <!-- Signal Details -->
+    <string name="technical_indicators">Technical Indicators</string>
+    <string name="adx_label" formatted="false">ADX: %s (%s)</string>
+    <string name="rsi_label" formatted="false">RSI: %.1f (%s)</string>
+    <string name="ema_20_label">EMA 20: %s</string>
+    <string name="ema_50_label">EMA 50: %s</string>
+    <string name="macd_label">MACD: %s</string>
+    
+    <!-- ADX Strength -->
+    <string name="adx_very_strong">VERY STRONG</string>
+    <string name="adx_strong">STRONG</string>
+    <string name="adx_moderate">MODERATE</string>
+    <string name="adx_weak">WEAK</string>
+    
+    <!-- RSI Levels -->
+    <string name="rsi_overbought">OVERBOUGHT</string>
+    <string name="rsi_oversold">OVERSOLD</string>
+    <string name="rsi_neutral">NEUTRAL</string>
+    
+    <!-- Signal Actions -->
+    <string name="mark_entry_taken">Mark Entry Taken</string>
+    <string name="mark_exit_taken">Mark Exit Taken</string>
+    <string name="share_signal">Share Signal</string>
+    
+    <!-- Dialog Messages -->
+    <string name="confirm_entry_taken">Mark this signal as entry taken?</string>
+    <string name="confirm_exit_taken">Mark this signal as exit taken?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="cancel">Cancel</string>
+    
+    <!-- Share Content -->
+    <string name="share_signal_text">Trading Signal: %s %s\nConfidence: %s\nEntry: %s\nReason: %s</string>
+    
+    <!-- Default notification channel ID -->
+    <string name="default_notification_channel_id">trading_signals</string>
+    
+    <!-- Content Descriptions for Accessibility -->
+    <string name="cd_settings">Settings</string>
+    <string name="cd_refresh">Refresh signals</string>
+    <string name="cd_signal_type">Signal type</string>
+    <string name="cd_confidence_level">Confidence level</string>
+</resources>
