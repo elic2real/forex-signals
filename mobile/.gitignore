@@ -1,0 +1,23 @@
+# Build and IDE files
+/.gradle/
+/build/
+/.idea/
+*.iml
+*.ipr
+*.iws
+local.properties
+
+# Generated APKs
+/app/build/
+
+# Sensitive files
+google-services.json
+keystore.jks
+*.keystore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
