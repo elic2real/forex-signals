@@ -26,7 +26,8 @@ class FirebaseIntegrationTest:
     def __init__(self):
         self.test_results = {}
         self.google_services_path = Path(__file__).parent.parent / "mobile" / "app" / "google-services.json"
-        self.service_account_path = Path(__file__).parent.parent / "firebase_service_account.json"
+        # Use the correct backend service account path
+        self.service_account_path = Path(__file__).parent / "config" / "firebase-service-account.json"
     
     def test_google_services_config(self):
         """Test mobile app Firebase configuration"""
