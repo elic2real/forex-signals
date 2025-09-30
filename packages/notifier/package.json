@@ -1,0 +1,11 @@
+{
+  "name": "@forex/notifier",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p ../../tsconfig.base.json -d --outDir dist src",
+    "typecheck": "tsc --noEmit -p ../../tsconfig.base.json",
+    "test": "vitest run"
+  }
+}

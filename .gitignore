@@ -1,4 +1,8 @@
-# Python
+node_modules/
+dist/
+.venv/
+__pycache__/
+.env*# Python
 __pycache__/
 *.pyc
 *.pyo
