@@ -1,0 +1,41 @@
+# Firebase configuration placeholder
+# You will need to download google-services.json from Firebase Console
+# and place it in the app/ directory
+
+# Instructions to get google-services.json:
+# 1. Go to https://console.firebase.google.com/
+# 2. Create a new project or select existing project
+# 3. Add Android app with package name: com.tradingsignals.alerts
+# 4. Download google-services.json
+# 5. Place the file in mobile/app/ directory
+
+# For testing purposes, this placeholder file shows the structure
+{
+  "project_info": {
+    "project_number": "your_project_number",
+    "project_id": "your-project-id",
+    "storage_bucket": "your-project-id.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "your_app_id",
+        "android_client_info": {
+          "package_name": "com.tradingsignals.alerts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "your_api_key"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
