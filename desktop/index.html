@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forex Signals Desktop</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #f7f7f7; }
+    nav { background: #222; color: #fff; padding: 1em; }
+    nav button { margin-right: 1em; }
+    .container { padding: 2em; }
+    .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; margin-bottom: 2em; padding: 1em; }
+  </style>
+</head>
+<body>
+  <nav>
+    <button onclick="showPage('signals')">Signals</button>
+    <button onclick="showPage('journal')">Journal</button>
+    <button onclick="showPage('calendar')">Calendar</button>
+  </nav>
+  <div class="container">
+    <div id="signals" class="card"></div>
+    <div id="journal" class="card" style="display:none"></div>
+    <div id="calendar" class="card" style="display:none"></div>
+  </div>
+  <script>
+    function showPage(page) {
+      ['signals','journal','calendar'].forEach(p => {
+        document.getElementById(p).style.display = (p === page) ? '' : 'none';
+      });
+      if (page === 'signals') loadSignals();
+      if (page === 'journal') loadJournal();
+      if (page === 'calendar') loadCalendar();
+    }
+    async function loadSignals() {
+      const el = document.getElementById('signals');
+      el.innerHTML = 'Loading...';
+      try {
+        const res = await fetch('http://localhost:8000/api/signals');
+        const data = await res.json();
+        el.innerHTML = '<h2>Signals</h2>' + (data.signals?.length ? '<ul>' + data.signals.map(s => `<li>${s.instrument} ${s.direction} (${s.confidence})</li>`).join('') + '</ul>' : 'No signals.');
+      } catch { el.innerHTML = 'Failed to load.'; }
+    }
+    async function loadJournal() {
+      const el = document.getElementById('journal');
+      el.innerHTML = 'Loading...';
+      try {
+        const res = await fetch('http://localhost:8000/api/journal');
+        const data = await res.json();
+        el.innerHTML = '<h2>Journal</h2>' + (data.entries?.length ? '<ul>' + data.entries.map(e => `<li>${e.pair} ${e.side} - ${e.narrative}</li>`).join('') + '</ul>' : 'No journal entries.');
+      } catch { el.innerHTML = 'Failed to load.'; }
+    }
+    async function loadCalendar() {
+      const el = document.getElementById('calendar');
+      el.innerHTML = 'Loading...';
+      try {
+        const res = await fetch('http://localhost:8000/api/calendar');
+        const data = await res.json();
+        el.innerHTML = '<h2>Calendar</h2>' + (data.calendar?.daily ? Object.entries(data.calendar.daily).map(([date, trades]) => `<div><b>${date}</b><ul>${trades.map(t => `<li>${t.pair} ${t.side}</li>`).join('')}</ul></div>`).join('') : 'No calendar data.');
+      } catch { el.innerHTML = 'Failed to load.'; }
+    }
+    showPage('signals');
+  </script>
+</body>
+</html>

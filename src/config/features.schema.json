@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "engines": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "type": "object",
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "weight": {"type": "number"},
+            "throttle_s": {"type": "number"},
+            "risk_pct": {"type": "number"}
+          },
+          "required": ["enabled", "weight"]
+        }
+      }
+    },
+    "supervisor": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "readiness_threshold": {"type": "number"}
+      },
+      "required": ["enabled", "readiness_threshold"]
+    },
+    "gates": {
+      "type": "object",
+      "properties": {
+        "max_spread_pips": {"type": "number"},
+        "allowed_sessions": {"type": "array", "items": {"type": "string"}},
+        "min_prob": {"type": "number"}
+      },
+      "required": ["max_spread_pips", "allowed_sessions", "min_prob"]
+    },
+    "kill_switch": {
+      "type": "object",
+      "properties": {
+        "equity_floor_pct": {"type": "number"}
+      },
+      "required": ["equity_floor_pct"]
+    },
+    "cool_off": {
+      "type": "object",
+      "properties": {
+        "loss_streak": {"type": "number"}
+      },
+      "required": ["loss_streak"]
+    },
+    "profit_giveback_pct": {"type": "number"}
+  },
+  "required": ["engines", "supervisor", "gates", "kill_switch", "cool_off", "profit_giveback_pct"]
+}

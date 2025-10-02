@@ -1,0 +1,4 @@
+# file: /home/elic/Documents/forex-signals/src/engines/engine_base.py
+# hypothesis_version: 6.140.2
+
+[1.0, 'calls', 'latency_ms', 'nonzero_ratio']

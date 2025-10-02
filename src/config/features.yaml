@@ -1,0 +1,25 @@
+# Feature flags and thresholds for all engines, gates, and risk controls
+engines:
+  news_engine:
+    enabled: true
+    weight: 1.0
+    throttle_s: 60
+    risk_pct: 0.5
+  technical_engine:
+    enabled: true
+    weight: 1.0
+    throttle_s: 60
+    risk_pct: 0.5
+  # ...add all other engines here
+supervisor:
+  enabled: true
+  readiness_threshold: 0.8
+gates:
+  max_spread_pips: 2.0
+  allowed_sessions: ["Asia", "London", "New York"]
+  min_prob: 0.6
+kill_switch:
+  equity_floor_pct: 60
+cool_off:
+  loss_streak: 3
+profit_giveback_pct: 0.2

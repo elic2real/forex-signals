@@ -80,13 +80,46 @@ def calculate_adx(high: pd.Series, low: pd.Series, close: pd.Series, length: int
         return pd.Series([20.0] * len(close), index=close.index)  # Default ADX
 
 class SignalEngine:
-    def __init__(self, oanda_client: OandaClient, fcm_service: FCMService, config: Any):
+    def __init__(self, oanda_client: OandaClient, fcm_service: FCMService, config: Any, firebase_adapter=None):
+        from src.engines.conditional_order_engine import ConditionalOrderEngine
+        from src.engines.correlation_engine import CorrelationEngine
+        from src.engines.execution_engine import ExecutionEngine
+        from src.engines.fundamental_engine import FundamentalEngine
+        from src.engines.journal_context_engine import JournalContextEngine
+        from src.engines.market_type_engine import MarketTypeEngine
+        from src.engines.news_engine import NewsEngine
+        from src.engines.psychology_engine import PsychologyEngine
+        from src.engines.technical_engine import TechnicalEngine
+        from src.engines.volume_velocity_engine import VolumeVelocityEngine
+        from src.engines.supervisor_engine import SupervisorEngine
         self.oanda_client = oanda_client
         self.fcm_service = fcm_service
         self.config = config
+        self.firebase_adapter = firebase_adapter
         self.monitoring = False
         self.device_tokens: List[str] = []  # Will be populated by mobile app registrations
         self._monitoring_task: Optional[asyncio.Task] = None
+        # Instantiate all engines
+        self.engines = {
+            "conditional": ConditionalOrderEngine(),
+            "correlation": CorrelationEngine(),
+            "execution": ExecutionEngine(),
+            "fundamental": FundamentalEngine(),
+            "journal": JournalContextEngine(),
+            "market_type": MarketTypeEngine(),
+            "news": NewsEngine(),
+            "psychology": PsychologyEngine(),
+            "technical": TechnicalEngine(),
+            "volume_velocity": VolumeVelocityEngine(),
+        }
+        # Supervisor weights from config or default
+        weights = {k: self.config.engines.get(f"{k}_engine", {{}}).get("weight", 1.0) for k in self.engines}
+        self.supervisor = SupervisorEngine(self.engines, weights)
+        # Guardrail state
+        self.peak_nav = 10000.0
+        self.loss_streak = 0
+        self.last_nav = 10000.0
+        self.equity_floor = self.config.gates.get("equity_floor_pct", 60) / 100 * self.peak_nav
         
     async def start_monitoring(self):
         """Start the signal monitoring loop"""
@@ -141,61 +174,118 @@ class SignalEngine:
             logger.info("monitoring_loop_ended")
     
     async def _check_instrument_signals(self, instrument: str):
-        """Check for trading signals on a specific instrument"""
+        """Check for trading signals on a specific instrument, run all engines, enforce guardrails, and place order if allowed."""
         try:
             logger.debug("checking_signals", instrument=instrument)
-            
-            # Skip if already have position (exposure check) with caching
+            # Exposure check
             positions = await self._get_positions_cached(instrument)
             if positions.get("has_position", False):
                 logger.debug("position_exists_skipping", instrument=instrument)
                 return
-            
-            # Get market data
+            # Get NAV and update peak NAV
+            nav = await self.oanda_client.get_account_balance() or self.last_nav
+            self.peak_nav = max(self.peak_nav, nav)
+            self.last_nav = nav
+            # Guardrails
+            from src.core import gates
+            if not gates.check_drawdown(nav, self.peak_nav):
+                gates.log_block("drawdown_cap", {"nav": nav, "peak_nav": self.peak_nav})
+                return
+            if not gates.check_profit_giveback(nav, self.peak_nav):
+                gates.log_block("profit_giveback", {"nav": nav, "peak_nav": self.peak_nav})
+                return
+            if not gates.check_loss_streak(self.loss_streak):
+                gates.log_block("loss_streak_cooloff", {"loss_streak": self.loss_streak})
+                return
+            if not gates.check_kill_switch(nav, self.equity_floor):
+                gates.log_block("kill_switch", {"nav": nav, "equity_floor": self.equity_floor})
+                return
+            # Market data
             price = await self.oanda_client.get_current_price(instrument)
             if not price:
                 return
-            
-            # Spread filter
             spread = await self.oanda_client.get_spread(instrument)
             if spread:
                 pip_size = self.oanda_client.pip_size_for(instrument)
                 spread_pips = spread / pip_size
-                
                 max_spread = self.config.filters.get("max_spread_pips", DEFAULT_MAX_SPREAD_PIPS)
                 if spread_pips > max_spread:
-                    logger.debug("spread_too_wide", instrument=instrument, spread_pips=spread_pips)
+                    gates.log_block("spread_too_wide", {"instrument": instrument, "spread_pips": spread_pips})
                     return
-            
-            # Weekend block with constants
+            # Weekend block
             if self.config.filters.get("weekend_block", True):
                 now = datetime.utcnow()
                 if (now.weekday() == WEEKEND_SATURDAY or 
                     (now.weekday() == WEEKEND_SUNDAY and now.hour < SUNDAY_MARKET_OPEN_HOUR)):
-                    logger.debug("weekend_block_active", instrument=instrument)
+                    gates.log_block("weekend_block_active", {"instrument": instrument})
                     return
-            
-            # Get candle data for technical analysis
-            df = await self.oanda_client.get_candles(instrument, 
-                                                   granularity=CANDLE_GRANULARITY, 
-                                                   count=CANDLE_COUNT)
+            # Candle data
+            df = await self.oanda_client.get_candles(instrument, granularity=CANDLE_GRANULARITY, count=CANDLE_COUNT)
             if df is None or len(df) < MIN_CANDLES_FOR_ANALYSIS:
-                logger.debug("insufficient_candle_data", instrument=instrument)
+                gates.log_block("insufficient_candle_data", {"instrument": instrument})
                 return
-            
-            # Apply correlation filter (SPY/EURUSD example)
-            if instrument == "EUR_USD":
-                correlation_ok = await self._check_correlation_filter()
-                if not correlation_ok:
-                    return
-            
-            # Technical analysis
-            signal_strength = await self._analyze_technical_signals(df, instrument)
-            
-            if signal_strength != 0:
-                # Generate alert
-                await self._generate_signal_alert(instrument, price, signal_strength)
-                
+            # Build context for engines
+            context = {
+                "instrument": instrument,
+                "price": price,
+                "spread": spread,
+                "nav": nav,
+                "volume": df["volume"].iloc[-1],
+                "rsi": float(df["close"].iloc[-14:].mean()),
+                # Add more features as needed
+            }
+            # Run all engines
+            engine_scores = {}
+            engine_reasons = {}
+            for name, engine in self.engines.items():
+                score, reason = engine.score(context)
+                engine_scores[name] = score
+                engine_reasons[name] = reason
+            # Supervisor aggregates
+            final_score, reasons = self.supervisor.score(context)
+            # Decision: only trade if supervisor score is strong
+            if abs(final_score) < 0.5:
+                logger.info("supervisor_no_trade", instrument=instrument, score=final_score, reasons=reasons)
+                return
+            # Build order
+            direction = "buy" if final_score > 0 else "sell"
+            units = 1000  # TODO: sizing logic
+            sl = price - 0.001 if direction == "buy" else price + 0.001
+            tp = price + 0.002 if direction == "buy" else price - 0.002
+            order = {
+                "instrument": instrument,
+                "side": direction,
+                "units": units,
+                "sl": sl,
+                "tp": tp,
+                "reason": reasons,
+            }
+            # Place order via OandaAdapter
+            from src.adapters.oanda_adapter import OandaAdapter
+            oanda_adapter = OandaAdapter(self.oanda_client.api_key, self.oanda_client.account_id)
+            result = oanda_adapter.place_order(order, nav=nav, price=price)
+            if result["status"] != "submitted":
+                gates.log_block("order_blocked", {"instrument": instrument, "reason": result.get("reason")})
+                return
+            # Log to Firebase journal/calendar
+            if self.firebase_adapter:
+                self.firebase_adapter.send_journal({
+                    "pair": instrument,
+                    "side": direction,
+                    "reason": reasons,
+                    "price": price,
+                    "units": units,
+                    "sl": sl,
+                    "tp": tp,
+                })
+                self.firebase_adapter.update_calendar({
+                    "pair": instrument,
+                    "side": direction,
+                    "price": price,
+                    "units": units,
+                    "timestamp": datetime.utcnow().timestamp(),
+                })
+            logger.info("order_submitted", instrument=instrument, order=order)
         except Exception as e:
             logger.error("signal_check_failed", instrument=instrument, error=str(e))
     
