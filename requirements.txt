@@ -30,3 +30,12 @@ python-dotenv==1.0.0
 python-jose[cryptography]==3.3.0
 redis==5.0.1
 requests==2.31.0
+
+# AI/ML for System 2.1
+ollama==0.3.3
+scikit-learn==1.5.2
+xgboost==2.1.1
+mapie==0.8.6  # For conformal prediction
+
+# Prometheus metrics (L.3)
+prometheus-client==0.20.0
