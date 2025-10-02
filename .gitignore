@@ -37,6 +37,9 @@ GoogleService-Info.plist
 firebase-debug.log
 firebase-debug.*.log
 
+# Google Cloud service account keys
+config/firebase-service-account.json
+
 # Mobile app build files
 mobile/app/build/
 mobile/app/release/
